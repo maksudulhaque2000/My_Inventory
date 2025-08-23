@@ -25,7 +25,7 @@ export async function POST(request: Request) {
   await dbConnect();
   try {
     const body = await request.json();
-    // এখানে ডেটা ভ্যালিডেশন করা যেতে পারে (যেমন: নাম বা ফোন নম্বর খালি কিনা)
+    // address ফিল্ডটি এখন বডি থেকে নেওয়া হচ্ছে
     if (!body.name || !body.phone) {
         return NextResponse.json({ success: false, error: 'Name and phone are required' }, { status: 400 });
     }
