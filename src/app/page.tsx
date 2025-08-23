@@ -34,7 +34,7 @@ export default async function DashboardPage() {
   const data = await getDashboardData();
 
   return (
-    <div className='bg-slate-50 text-slate-800'>
+    <div>
       <h1 className="text-3xl font-bold mb-6">ড্যাশবোর্ড</h1>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
@@ -45,7 +45,7 @@ export default async function DashboardPage() {
           </div>
           <div>
             <p className="text-slate-500">মোট স্টকের মূল্য</p>
-            <p className="text-2xl font-bold">৳ {data.totalStockValue.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-slate-800">৳ {data.totalStockValue.toLocaleString()}</p>
           </div>
         </div>
 
@@ -56,7 +56,7 @@ export default async function DashboardPage() {
           </div>
           <div>
             <p className="text-slate-500">আজকের সেল</p>
-            <p className="text-2xl font-bold">৳ {data.todaySales.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-slate-800">৳ {data.todaySales.toLocaleString()}</p>
           </div>
         </div>
 
@@ -67,7 +67,7 @@ export default async function DashboardPage() {
           </div>
           <div>
             <p className="text-slate-500">মোট বাকি</p>
-            <p className="text-2xl font-bold">৳ {data.totalDue.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-slate-800">৳ {data.totalDue.toLocaleString()}</p>
           </div>
         </div>
 

@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import Link from 'next/link';
 import { FiBox, FiTrendingUp, FiUsers, FiHome } from 'react-icons/fi';
+import { Toaster } from 'react-hot-toast'; // <-- এটি ইমপোর্ট করুন
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -20,8 +21,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} bg-slate-50 text-slate-800`}>
+        <Toaster position="top-center" reverseOrder={false} /> {/* <-- এটি যোগ করুন */}
         <div className="flex">
-          <aside className="w-64 h-screen bg-white shadow-md p-4">
+          <aside className="w-64 h-screen bg-white shadow-md p-4 fixed"> {/* <-- সাইডবার ফিক্সড করা হয়েছে */}
             <h1 className="text-2xl font-bold text-blue-600 mb-8">আমার প্রতিষ্ঠান</h1>
             <nav className="flex flex-col space-y-2">
               <Link href="/" className="flex items-center p-2 text-lg text-slate-700 hover:bg-blue-50 rounded-lg transition-colors">
@@ -38,7 +40,7 @@ export default function RootLayout({
               </Link>
             </nav>
           </aside>
-          <main className="flex-1 p-8">
+          <main className="flex-1 p-8 ml-64"> {/* <-- কন্টেন্টের জন্য মার্জিন যোগ করা হয়েছে */}
             {children}
           </main>
         </div>

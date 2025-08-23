@@ -1,10 +1,12 @@
 // src/app/products/page.tsx
-'use client'; 
-
+'use client';
 import { useState, useEffect, useCallback } from 'react';
-import { FiPlus } from 'react-icons/fi';
+import { FiPlus, FiEdit, FiTrash2 } from 'react-icons/fi';
+import toast from 'react-hot-toast';
 import Modal from '@/components/Modal';
 import AddProductForm from '@/components/AddProductForm';
+import EditProductForm from '@/components/EditProductForm';
+import Spinner from '@/components/Spinner';
 
 interface Product {
   _id: string;
@@ -18,18 +20,17 @@ interface Product {
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalContent, setModalContent] = useState<'add' | 'edit' | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const fetchProducts = useCallback(async () => {
     setIsLoading(true);
     try {
       const res = await fetch('/api/products');
       const data = await res.json();
-      if (data.success) {
-        setProducts(data.data);
-      }
+      if (data.success) setProducts(data.data);
     } catch (error) {
-      console.error("Failed to fetch products", error);
+      toast.error("প্রোডাক্ট আনতে সমস্যা হয়েছে।");
     } finally {
       setIsLoading(false);
     }
@@ -39,65 +40,81 @@ export default function ProductsPage() {
     fetchProducts();
   }, [fetchProducts]);
 
+  const openModal = (type: 'add' | 'edit', product: Product | null = null) => {
+    setModalContent(type);
+    setSelectedProduct(product);
+  };
+
+  const closeModal = () => {
+    setModalContent(null);
+    setSelectedProduct(null);
+  };
+
+  const handleDelete = async (productId: string) => {
+    if (window.confirm('আপনি কি নিশ্চিতভাবে এই প্রোডাক্টটি ডিলিট করতে চান?')) {
+      const toastId = toast.loading('ডিলিট করা হচ্ছে...');
+      try {
+        const res = await fetch(`/api/products/${productId}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('ডিলিট করতে ব্যর্থ!');
+        toast.success('প্রোডাক্ট সফলভাবে ডিলিট করা হয়েছে!', { id: toastId });
+        fetchProducts(); // Refresh the list
+      } catch (error: any) {
+        toast.error(error.message, { id: toastId });
+      }
+    }
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">প্রোডাক্ট লিস্ট</h1>
-        <button 
-          onClick={() => setIsModalOpen(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg"
-        >
+        <button onClick={() => openModal('add')} className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-blue-700 transition-colors">
           <FiPlus />
-          <span>নতুন প্রোডাক্ট যোগ করুন</span>
+          <span>নতুন প্রোডাক্ট</span>
         </button>
       </div>
-      
-      {/* Main Content: Table */}
-      {/* ... (আপনার টেবিলের কোড এখানে থাকবে, কোনো পরিবর্তন নেই) ... */}
+
       <div className="bg-white shadow-md rounded-lg overflow-hidden">
         <table className="min-w-full leading-normal">
-          {/* ... table head ... */}
           <thead className="bg-slate-100">
-              <tr>
-                <th className="px-5 py-3 border-b-2 border-slate-200 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">প্রোডাক্টের নাম</th>
-                <th className="px-5 py-3 border-b-2 border-slate-200 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">ইমপোর্ট (পিস)</th>
-                <th className="px-5 py-3 border-b-2 border-slate-200 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">বিক্রি (পিস)</th>
-                <th className="px-5 py-3 border-b-2 border-slate-200 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">স্টকে আছে (পিস)</th>
-                <th className="px-5 py-3 border-b-2 border-slate-200 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">মূল্য (প্রতি পিস)</th>
-              </tr>
-            </thead>
+            <tr>
+              <th className="px-5 py-3 border-b-2 border-slate-200 text-left font-semibold text-slate-600 uppercase">নাম</th>
+              <th className="px-5 py-3 border-b-2 border-slate-200 text-left font-semibold text-slate-600 uppercase">ইমপোর্ট</th>
+              <th className="px-5 py-3 border-b-2 border-slate-200 text-left font-semibold text-slate-600 uppercase">বিক্রি</th>
+              <th className="px-5 py-3 border-b-2 border-slate-200 text-left font-semibold text-slate-600 uppercase">স্টক</th>
+              <th className="px-5 py-3 border-b-2 border-slate-200 text-left font-semibold text-slate-600 uppercase">মূল্য</th>
+              <th className="px-5 py-3 border-b-2 border-slate-200 text-left font-semibold text-slate-600 uppercase">একশন</th>
+            </tr>
+          </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan={5} className="text-center py-4">লোড হচ্ছে...</td></tr>
+              <tr><td colSpan={6}><Spinner /></td></tr>
             ) : products.length === 0 ? (
-              <tr><td colSpan={5} className="text-center py-4">কোনো প্রোডাক্ট পাওয়া যায়নি।</td></tr>
-            ) : (
-              products.map((product) => (
+              <tr><td colSpan={6} className="text-center py-4 font-bold text-xl text-red-600">কোনো প্রোডাক্ট পাওয়া যায়নি।</td></tr>
+            ) : (products.map((product) => (
                 <tr key={product._id} className="hover:bg-slate-50">
-                  <td className="px-5 py-4 border-b border-slate-200 text-sm">{product.name}</td>
-                  <td className="px-5 py-4 border-b border-slate-200 text-sm">{product.importQuantity}</td>
-                  <td className="px-5 py-4 border-b border-slate-200 text-sm">{product.soldQuantity}</td>
-                  <td className="px-5 py-4 border-b border-slate-200 text-sm font-semibold">{product.stock}</td>
-                  <td className="px-5 py-4 border-b border-slate-200 text-sm">৳ {product.price}</td>
+                  <td className="px-5 py-4 border-b border-slate-200 text-sm font-semibold text-slate-800">{product.name}</td>
+                  <td className="px-5 py-4 border-b border-slate-200 text-sm font-semibold text-slate-800">{product.importQuantity}</td>
+                  <td className="px-5 py-4 border-b border-slate-200 text-sm font-semibold text-slate-800">{product.soldQuantity}</td>
+                  <td className="px-5 py-4 border-b border-slate-200 text-sm font-semibold text-slate-800">{product.stock}</td>
+                  <td className="px-5 py-4 border-b border-slate-200 text-sm font-semibold text-slate-800">৳ {product.price}</td>
+                  <td className="px-5 py-4 border-b border-slate-200 text-sm font-semibold text-slate-800">
+                    <div className="flex space-x-3">
+                      <button onClick={() => openModal('edit', product)} className="text-blue-600 hover:text-blue-800"><FiEdit size={18} /></button>
+                      <button onClick={() => handleDelete(product._id)} className="text-red-600 hover:text-red-800"><FiTrash2 size={18} /></button>
+                    </div>
+                  </td>
                 </tr>
-              ))
-            )}
+              )))}
           </tbody>
         </table>
       </div>
 
-      {/* Modal for adding a new product */}
-      <Modal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        title="নতুন প্রোডাক্ট যোগ করুন"
-      >
-        <AddProductForm 
-          onSuccess={() => {
-            fetchProducts(); // রিফ্রেশ করার জন্য
-          }}
-          onClose={() => setIsModalOpen(false)}
-        />
+      <Modal isOpen={modalContent !== null} onClose={closeModal} title={<span className="text-slate-800">
+      {modalContent === 'add' ? 'নতুন প্রোডাক্ট' : 'প্রোডাক্ট এডিট করুন'}
+    </span>}>
+        {modalContent === 'add' && <AddProductForm onSuccess={fetchProducts} onClose={closeModal} />}
+        {modalContent === 'edit' && selectedProduct && <EditProductForm product={selectedProduct} onSuccess={fetchProducts} onClose={closeModal} />}
       </Modal>
     </div>
   );
