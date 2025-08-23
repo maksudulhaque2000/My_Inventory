@@ -1,10 +1,10 @@
-// src/components/AddSaleForm.tsx
 'use client';
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import SearchableDropdown from './SearchableDropdown';
 
 interface Product { _id: string; name: string; }
-interface Customer { _id: string; name: string; }
+interface Customer { _id: string; name: string; phone: string; }
 
 interface AddSaleFormProps {
   onSuccess: () => void;
@@ -14,14 +14,15 @@ interface AddSaleFormProps {
 const AddSaleForm = ({ onSuccess, onClose }: AddSaleFormProps) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [selectedProduct, setSelectedProduct] = useState('');
-  const [selectedCustomer, setSelectedCustomer] = useState('');
+  
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  
   const [quantity, setQuantity] = useState('1');
   const [paymentStatus, setPaymentStatus] = useState<'Paid' | 'Due'>('Paid');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    // Fetch products and customers for dropdowns
     const fetchData = async () => {
       try {
         const [prodRes, custRes] = await Promise.all([
@@ -33,7 +34,7 @@ const AddSaleForm = ({ onSuccess, onClose }: AddSaleFormProps) => {
         if (prodData.success) setProducts(prodData.data);
         if (custData.success) setCustomers(custData.data);
       } catch (error) {
-        toast.error("প্রোডাক্ট বা কাস্টমার আনতে সমস্যা হয়েছে।");
+        toast.error("প্রোডাক্ট বা কাস্টমার আনতে সমস্যা হয়েছে।");
       }
     };
     fetchData();
@@ -46,13 +47,14 @@ const AddSaleForm = ({ onSuccess, onClose }: AddSaleFormProps) => {
       return;
     }
     setIsSubmitting(true);
+    const toastId = toast.loading('সেল রেকর্ড করা হচ্ছে...');
     try {
       const res = await fetch('/api/sales', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          product: selectedProduct,
-          customer: selectedCustomer,
+          product: selectedProduct?._id,
+          customer: selectedCustomer?._id,
           quantity: Number(quantity),
           paymentStatus,
         }),
@@ -60,11 +62,11 @@ const AddSaleForm = ({ onSuccess, onClose }: AddSaleFormProps) => {
       const result = await res.json();
       if (!res.ok) throw new Error(result.error);
       
-      toast.success('সেল সফলভাবে রেকর্ড করা হয়েছে!');
+      toast.success('সেল সফলভাবে রেকর্ড করা হয়েছে!', { id: toastId });
       onSuccess();
       onClose();
     } catch (err: any) {
-      toast.error(err.message || 'সেল রেকর্ড করতে সমস্যা হয়েছে।');
+      toast.error(err.message || 'সেল রেকর্ড করতে সমস্যা হয়েছে।', { id: toastId });
     } finally {
       setIsSubmitting(false);
     }
@@ -73,60 +75,56 @@ const AddSaleForm = ({ onSuccess, onClose }: AddSaleFormProps) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-slate-800">প্রোডাক্ট সিলেক্ট করুন</label>
-        <select value={selectedProduct} onChange={(e) => setSelectedProduct(e.target.value)} className="mt-1 block w-full select-field text-slate-800">
-          <option value="">--প্রোডাক্ট--</option>
-          {products.map(p => <option key={p._id} value={p._id}>{p.name}</option>)}
-        </select>
+        <label className="block text-sm font-medium text-slate-800">প্রোডাক্ট সার্চ করুন</label>
+        <SearchableDropdown
+          items={products}
+          selected={selectedProduct}
+          setSelected={(item) => setSelectedProduct(item as Product | null)}
+          placeholder="প্রোডাক্টের নাম লিখুন..."
+          displayValue={(item) => item.name}
+        />
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-800">কাস্টমার সিলেক্ট করুন</label>
-        <select value={selectedCustomer} onChange={(e) => setSelectedCustomer(e.target.value)} className="mt-1 block w-full select-field text-slate-800">
-          <option value="">--কাস্টমার--</option>
-          {customers.map(c => <option key={c._id} value={c._id}>{c.name} - {c.phone}</option>)}
-        </select>
+        <label className="block text-sm font-medium text-slate-800">কাস্টমার সার্চ করুন</label>
+        <SearchableDropdown
+          items={customers}
+          selected={selectedCustomer}
+          setSelected={(item) => setSelectedCustomer(item as Customer | null)}
+          placeholder="কাস্টমারের নাম বা ফোন নম্বর..."
+          displayValue={(item) => `${item.name} - ${item.phone}`}
+        />
       </div>
       <div>
         <label className="block text-sm font-medium text-slate-800">পরিমাণ (পিস)</label>
-        <input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} min="1" className="mt-1 block w-full input-field text-slate-800" />
+        <input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} min="1" 
+               className="mt-1 block w-full px-3 py-2 text-slate-800 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" 
+        />
       </div>
       <div>
         <label className="block text-sm font-medium text-slate-800">পেমেন্ট স্ট্যাটাস</label>
-        <select value={paymentStatus} onChange={(e) => setPaymentStatus(e.target.value as 'Paid' | 'Due')} className="mt-1 block w-full select-field text-slate-800">
+        <select value={paymentStatus} onChange={(e) => setPaymentStatus(e.target.value as 'Paid' | 'Due')} 
+                className="mt-1 block w-full px-3 py-2 text-slate-800 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+        >
           <option value="Paid">Paid</option>
           <option value="Due">Due</option>
         </select>
       </div>
       <div className="flex justify-end space-x-3 pt-2">
-        <button type="button" onClick={onClose} className="btn-secondary">বাতিল</button>
-        <button type="submit" disabled={isSubmitting} className="btn-primary">
+        {/* সরাসরি Tailwind ক্লাস ব্যবহার করা হয়েছে */}
+        <button type="button" onClick={onClose} 
+                className="px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300 transition-colors"
+        >
+            বাতিল
+        </button>
+        {/* সরাসরি Tailwind ক্লাস ব্যবহার করা হয়েছে */}
+        <button type="submit" disabled={isSubmitting} 
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed transition-colors"
+        >
           {isSubmitting ? 'রেকর্ড হচ্ছে...' : 'রেকর্ড করুন'}
         </button>
       </div>
-      {/* Add some base styles in globals.css for reusability */}
-      <style jsx global>{`
-        .input-field, .select-field {
-          padding: 0.5rem 0.75rem;
-          border: 1px solid #cbd5e1;
-          border-radius: 0.375rem;
-          width: 100%;
-        }
-        .btn-primary {
-          padding: 0.5rem 1rem;
-          background-color: #2563eb;
-          color: white;
-          border-radius: 0.375rem;
-        }
-        .btn-primary:hover { background-color: #1d4ed8; }
-        .btn-primary:disabled { background-color: #93c5fd; }
-        .btn-secondary {
-          padding: 0.5rem 1rem;
-          background-color: #e2e8f0;
-          color: #1e293b;
-          border-radius: 0.375rem;
-        }
-        .btn-secondary:hover { background-color: #cbd5e1; }
-      `}</style>
+      
+      {/* <style jsx global> ব্লকটি সম্পূর্ণ সরিয়ে ফেলা হয়েছে </style> */}
     </form>
   );
 };
