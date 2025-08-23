@@ -28,7 +28,7 @@ export default function CustomersPage() {
       const data = await res.json();
       if (data.success) setCustomers(data.data);
     } catch (error) {
-      toast.error("কাস্টমার তালিকা আনতে সমস্যা হয়েছে।");
+      toast.error("কাস্টমার তালিকা আনতে সমস্যা হয়েছে।");
     } finally {
       setIsLoading(false);
     }
@@ -48,18 +48,50 @@ export default function CustomersPage() {
     setSelectedCustomer(null);
   };
 
-  const handleDelete = async (customerId: string) => {
-    if (window.confirm('আপনি কি নিশ্চিতভাবে এই কাস্টমারকে ডিলিট করতে চান?')) {
-      const toastId = toast.loading('ডিলিট করা হচ্ছে...');
-      try {
-        const res = await fetch(`/api/customers/${customerId}`, { method: 'DELETE' });
-        if (!res.ok) throw new Error('ডিলিট করতে ব্যর্থ!');
-        toast.success('কাস্টমার সফলভাবে ডিলিট করা হয়েছে!', { id: toastId });
-        fetchCustomers();
-      } catch (error: any) {
-        toast.error(error.message, { id: toastId });
-      }
+  // আসল ডিলিট অপারেশন চালানোর জন্য একটি ফাংশন
+  const performDelete = async (customerId: string) => {
+    const toastId = toast.loading('ডিলিট করা হচ্ছে...');
+    try {
+      const res = await fetch(`/api/customers/${customerId}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('ডিলিট করতে ব্যর্থ!');
+      toast.success('কাস্টমার সফলভাবে ডিলিট করা হয়েছে!', { id: toastId });
+      fetchCustomers();
+    } catch (error: any) {
+      toast.error(error.message, { id: toastId });
     }
+  };
+
+  // handleDelete ফাংশনটি এখন একটি কাস্টম টোস্ট দেখাবে
+  const handleDelete = (customerId: string, customerName: string) => {
+    toast((t) => (
+      <div className="flex flex-col items-center gap-4 p-2">
+        <div className="text-center">
+          <p className="font-bold text-slate-800">আপনি কি নিশ্চিত?</p>
+          <p className="text-sm text-slate-600">
+            আপনি <span className="font-semibold">{customerName}</span>-কে তালিকা থেকে মুছে ফেলতে চান?
+          </p>
+        </div>
+        <div className="flex gap-3">
+          <button
+            onClick={() => {
+              toast.dismiss(t.id);
+              performDelete(customerId);
+            }}
+            className="px-4 py-2 bg-red-600 text-white rounded-md text-sm hover:bg-red-700"
+          >
+            হ্যাঁ, নিশ্চিত
+          </button>
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            className="px-4 py-2 bg-slate-200 text-slate-800 rounded-md text-sm hover:bg-slate-300"
+          >
+            না, বাতিল
+          </button>
+        </div>
+      </div>
+    ), {
+      duration: 6000,
+    });
   };
 
   return (
@@ -86,7 +118,7 @@ export default function CustomersPage() {
             {isLoading ? (
               <tr><td colSpan={4}><Spinner /></td></tr>
             ) : customers.length === 0 ? (
-              <tr><td colSpan={4} className="text-center py-4">কোনো কাস্টমার পাওয়া যায়নি।</td></tr>
+              <tr><td colSpan={4} className="text-center py-4 text-red-600 text-xl">কোনো কাস্টমার পাওয়া যায়নি।</td></tr>
             ) : (
               customers.map((customer) => (
                 <tr key={customer._id} className="hover:bg-slate-50">
@@ -96,7 +128,8 @@ export default function CustomersPage() {
                   <td className="px-5 py-4 border-b text-sm text-slate-800">
                     <div className="flex space-x-3">
                       <button onClick={() => openModal('edit', customer)} className="text-blue-600 hover:text-blue-800"><FiEdit size={18} /></button>
-                      <button onClick={() => handleDelete(customer._id)} className="text-red-600 hover:text-red-800"><FiTrash2 size={18} /></button>
+                      {/* onClick ইভেন্টটি এখন customer.name পাস করছে */}
+                      <button onClick={() => handleDelete(customer._id, customer.name)} className="text-red-600 hover:text-red-800"><FiTrash2 size={18} /></button>
                     </div>
                   </td>
                 </tr>

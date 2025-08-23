@@ -30,7 +30,7 @@ export default function ProductsPage() {
       const data = await res.json();
       if (data.success) setProducts(data.data);
     } catch (error) {
-      toast.error("প্রোডাক্ট আনতে সমস্যা হয়েছে।");
+      toast.error("প্রোডাক্ট আনতে সমস্যা হয়েছে।");
     } finally {
       setIsLoading(false);
     }
@@ -50,18 +50,50 @@ export default function ProductsPage() {
     setSelectedProduct(null);
   };
 
-  const handleDelete = async (productId: string) => {
-    if (window.confirm('আপনি কি নিশ্চিতভাবে এই প্রোডাক্টটি ডিলিট করতে চান?')) {
-      const toastId = toast.loading('ডিলিট করা হচ্ছে...');
-      try {
-        const res = await fetch(`/api/products/${productId}`, { method: 'DELETE' });
-        if (!res.ok) throw new Error('ডিলিট করতে ব্যর্থ!');
-        toast.success('প্রোডাক্ট সফলভাবে ডিলিট করা হয়েছে!', { id: toastId });
-        fetchProducts(); // Refresh the list
-      } catch (error: any) {
-        toast.error(error.message, { id: toastId });
-      }
+  // আসল ডিলিট অপারেশন চালানোর জন্য ফাংশন
+  const performDelete = async (productId: string) => {
+    const toastId = toast.loading('ডিলিট করা হচ্ছে...');
+    try {
+      const res = await fetch(`/api/products/${productId}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('ডিলিট করতে ব্যর্থ!');
+      toast.success('প্রোডাক্ট সফলভাবে ডিলিট করা হয়েছে!', { id: toastId });
+      fetchProducts(); // Refresh the list
+    } catch (error: any) {
+      toast.error(error.message, { id: toastId });
     }
+  };
+  
+  // handleDelete ফাংশনটি এখন একটি কাস্টম টোস্ট দেখাবে
+  const handleDelete = (productId: string, productName: string) => {
+    toast((t) => (
+      <div className="flex flex-col items-center gap-4 p-2">
+        <div className="text-center">
+          <p className="font-bold text-slate-800">আপনি কি নিশ্চিত?</p>
+          <p className="text-sm text-slate-600">
+            আপনি <span className="font-semibold">{productName}</span> প্রোডাক্টটি মুছে ফেলতে চান?
+          </p>
+        </div>
+        <div className="flex gap-3">
+          <button
+            onClick={() => {
+              toast.dismiss(t.id);
+              performDelete(productId);
+            }}
+            className="px-4 py-2 bg-red-600 text-white rounded-md text-sm hover:bg-red-700"
+          >
+            হ্যাঁ, নিশ্চিত
+          </button>
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            className="px-4 py-2 bg-slate-200 text-slate-800 rounded-md text-sm hover:bg-slate-300"
+          >
+            না, বাতিল
+          </button>
+        </div>
+      </div>
+    ), {
+      duration: 6000,
+    });
   };
 
   return (
@@ -90,7 +122,7 @@ export default function ProductsPage() {
             {isLoading ? (
               <tr><td colSpan={6}><Spinner /></td></tr>
             ) : products.length === 0 ? (
-              <tr><td colSpan={6} className="text-center py-4 font-bold text-xl text-red-600">কোনো প্রোডাক্ট পাওয়া যায়নি।</td></tr>
+              <tr><td colSpan={6} className="text-center py-4 font-bold text-xl text-red-600">কোনো প্রোডাক্ট পাওয়া যায়নি।</td></tr>
             ) : (products.map((product) => (
                 <tr key={product._id} className="hover:bg-slate-50">
                   <td className="px-5 py-4 border-b border-slate-200 text-sm font-semibold text-slate-800">{product.name}</td>
@@ -101,7 +133,8 @@ export default function ProductsPage() {
                   <td className="px-5 py-4 border-b border-slate-200 text-sm font-semibold text-slate-800">
                     <div className="flex space-x-3">
                       <button onClick={() => openModal('edit', product)} className="text-blue-600 hover:text-blue-800"><FiEdit size={18} /></button>
-                      <button onClick={() => handleDelete(product._id)} className="text-red-600 hover:text-red-800"><FiTrash2 size={18} /></button>
+                      {/* onClick ইভেন্টটি এখন product.name পাস করছে */}
+                      <button onClick={() => handleDelete(product._id, product.name)} className="text-red-600 hover:text-red-800"><FiTrash2 size={18} /></button>
                     </div>
                   </td>
                 </tr>
