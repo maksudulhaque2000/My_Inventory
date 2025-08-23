@@ -56,8 +56,12 @@ export default function CustomersPage() {
       if (!res.ok) throw new Error('ডিলিট করতে ব্যর্থ!');
       toast.success('কাস্টমার সফলভাবে ডিলিট করা হয়েছে!', { id: toastId });
       fetchCustomers();
-    } catch (error: any) {
-      toast.error(error.message, { id: toastId });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+    toast.error(error.message, { id: toastId });
+  } else {
+    toast.error('An unknown error occurred', { id: toastId });
+  }
     }
   };
 

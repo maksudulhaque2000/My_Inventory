@@ -43,8 +43,12 @@ const AddProductForm = ({ onSuccess, onClose }: AddProductFormProps) => {
       onSuccess(); // প্রোডাক্ট লিস্ট রিফ্রেশ করার জন্য
       onClose(); // মডাল বন্ধ করার জন্য
 
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unknown error occurred');
+      }
     } finally {
       setIsSubmitting(false);
     }

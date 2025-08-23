@@ -37,8 +37,12 @@ const AddCustomerForm = ({ onSuccess, onClose }: AddCustomerFormProps) => {
       onSuccess();
       onClose();
 
-    } catch (err: any) {
-      toast.error(err.message || 'কিছু একটা সমস্যা হয়েছে।', { id: toastId });
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        toast.error(err.message, { id: toastId });
+      } else {
+        toast.error('An unknown error occurred', { id: toastId });
+      }
     } finally {
       setIsSubmitting(false);
     }

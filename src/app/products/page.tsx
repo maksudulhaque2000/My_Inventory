@@ -58,8 +58,12 @@ export default function ProductsPage() {
       if (!res.ok) throw new Error('ডিলিট করতে ব্যর্থ!');
       toast.success('প্রোডাক্ট সফলভাবে ডিলিট করা হয়েছে!', { id: toastId });
       fetchProducts(); // Refresh the list
-    } catch (error: any) {
-      toast.error(error.message, { id: toastId });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+    toast.error(error.message, { id: toastId });
+  } else {
+    toast.error('An unknown error occurred', { id: toastId });
+  }
     }
   };
   

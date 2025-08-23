@@ -51,8 +51,12 @@ const EditProductForm = ({ product, onSuccess, onClose }: EditProductFormProps) 
       onSuccess();
       onClose();
 
-    } catch (err: any) {
-      toast.error(err.message || 'আপডেট করতে সমস্যা হয়েছে।');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      } else {
+        toast.error('An unknown error occurred');
+      }
     } finally {
       setIsSubmitting(false);
     }
