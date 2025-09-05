@@ -16,7 +16,7 @@ Here are a few snapshots of the application in action.
 
 | Dashboard                                    | Products Page                               | New Sale Form                              |
 | ------------------------------------------ | --------------------------------------------- | --------------------------------------------- |
-| ![Dashboard](./screenshots/dashboard.png) | ![Products Page](./screenshots/products.png) | ![Sales Modal](./screenshots/sales.png) |
+| ![Dashboard](./public/dashboard.png) | ![Products Page](./public/products.png) | ![Sales Modal](./public/sales.png) | ![customer Modal](./public/customer.png) |
 
 *(Note: You can create a `screenshots` folder in your project's root and place the corresponding images there.)*
 
@@ -100,10 +100,10 @@ In the project directory, you can run:
 
 This application is optimized for deployment on Vercel.
 
-1. Push your project to a GitHub repository.
-2. Log in to Vercel and import your project from the repository.
-3. In the project settings, navigate to the "Environment Variables" section and add your MONGODB_URI and the production NEXT_PUBLIC_API_URL.
-4. Click "Deploy". Vercel will handle the rest.
+1.  **Push your project to a GitHub repository.**
+2.  **Log in to Vercel and import your project from the repository.**
+3.  **In the project settings, navigate to the "Environment Variables" section and add your MONGODB_URI and the production NEXT_PUBLIC_API_URL.**
+4.  **Click "Deploy". Vercel will handle the rest.**
 
 ---
 
