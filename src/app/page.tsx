@@ -1,41 +1,13 @@
 // src/app/page.tsx
 import { FiArchive, FiDollarSign, FiAlertCircle } from 'react-icons/fi';
+import { getDashboardSummary } from '@/lib/dashboardService';
 
 // Force this page to be dynamic (server-rendered at request time)
 export const dynamic = 'force-dynamic';
 
-// API থেকে ডেটা আনার জন্য এই ফাংশনটি আপডেট করা হয়েছে
-async function getDashboardData() {
-  try {
-    // Use absolute URL for server-side fetching
-    const baseUrl = process.env.VERCEL_URL 
-      ? `https://${process.env.VERCEL_URL}` 
-      : 'http://localhost:3000';
-    
-    const res = await fetch(`${baseUrl}/api/dashboard-summary`, {
-      cache: 'no-store', // সবসময় লেটেস্ট ডেটা দেখানোর জন্য
-    });
-
-    if (!res.ok) {
-      throw new Error('Failed to fetch dashboard data');
-    }
-
-    const result = await res.json();
-    return result.data;
-
-  } catch (error) {
-    console.error(error);
-    // ডেটা আনতে ব্যর্থ হলে ডিফল্ট ভ্যালু রিটার্ন করবে
-    return {
-      totalStockValue: 0,
-      todaySales: 0,
-      totalDue: 0,
-    };
-  }
-}
-
 export default async function DashboardPage() {
-  const data = await getDashboardData();
+  // Call the service directly instead of making an HTTP request
+  const data = await getDashboardSummary();
 
   return (
     <div>
