@@ -83,7 +83,7 @@ const AddSaleForm = ({ onSuccess, onClose }: AddSaleFormProps) => {
         <SearchableDropdown
           items={products}
           selected={selectedProduct}
-          setSelected={(item) => setSelectedProduct(item as Product | null)}
+          setSelected={setSelectedProduct}
           placeholder="প্রোডাক্টের নাম লিখুন..."
           displayValue={(item) => item.name}
         />
@@ -93,7 +93,7 @@ const AddSaleForm = ({ onSuccess, onClose }: AddSaleFormProps) => {
         <SearchableDropdown
           items={customers}
           selected={selectedCustomer}
-          setSelected={(item) => setSelectedCustomer(item as Customer | null)}
+          setSelected={setSelectedCustomer}
           placeholder="কাস্টমারের নাম বা ফোন নম্বর..."
           displayValue={(item) => `${item.name} - ${item.phone}`}
         />

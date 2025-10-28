@@ -3,17 +3,18 @@ import dbConnect from '@/lib/dbConnect';
 import Customer from '@/models/Customer';
 
 type Params = {
-    params: {
+    params: Promise<{
         id: string;
-    }
+    }>
 }
 
 // একটি কাস্টমার আপডেট করার জন্য
 export async function PUT(request: Request, { params }: Params) {
   await dbConnect();
   try {
+    const { id } = await params;
     const body = await request.json();
-    const customer = await Customer.findByIdAndUpdate(params.id, body, {
+    const customer = await Customer.findByIdAndUpdate(id, body, {
       new: true,
       runValidators: true,
     });
@@ -30,7 +31,8 @@ export async function PUT(request: Request, { params }: Params) {
 export async function DELETE(request: Request, { params }: Params) {
   await dbConnect();
   try {
-    const deletedCustomer = await Customer.findByIdAndDelete(params.id);
+    const { id } = await params;
+    const deletedCustomer = await Customer.findByIdAndDelete(id);
     if (!deletedCustomer) {
       return NextResponse.json({ success: false, error: 'Customer not found' }, { status: 404 });
     }
