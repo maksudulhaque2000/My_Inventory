@@ -28,7 +28,7 @@ export default function CustomersPage() {
       const data = await res.json();
       if (data.success) setCustomers(data.data);
     } catch (error) {
-      toast.error("কাস্টমার তালিকা আনতে সমস্যা হয়েছে।");
+      toast.error(`কাস্টমার তালিকা আনতে সমস্যা হয়েছে। ${error}`);
     } finally {
       setIsLoading(false);
     }

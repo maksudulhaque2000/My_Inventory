@@ -9,7 +9,7 @@ import clsx from 'clsx';
 interface Item {
   _id: string;
   name: string;
-  [key: string]: any; // Allows for other properties like 'phone'
+  [key: string]: unknown; // Allows for other properties like 'phone'
 }
 
 interface SearchableDropdownProps {

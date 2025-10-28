@@ -34,7 +34,7 @@ const AddSaleForm = ({ onSuccess, onClose }: AddSaleFormProps) => {
         if (prodData.success) setProducts(prodData.data);
         if (custData.success) setCustomers(custData.data);
       } catch (error) {
-        toast.error("প্রোডাক্ট বা কাস্টমার আনতে সমস্যা হয়েছে।");
+        toast.error(`প্রোডাক্ট বা কাস্টমার আনতে সমস্যা হয়েছে। ${error}`);
       }
     };
     fetchData();

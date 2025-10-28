@@ -30,7 +30,7 @@ export default function ProductsPage() {
       const data = await res.json();
       if (data.success) setProducts(data.data);
     } catch (error) {
-      toast.error("প্রোডাক্ট আনতে সমস্যা হয়েছে।");
+      toast.error(`প্রোডাক্ট আনতে সমস্যা হয়েছে। ${error}`);
     } finally {
       setIsLoading(false);
     }
@@ -50,14 +50,13 @@ export default function ProductsPage() {
     setSelectedProduct(null);
   };
 
-  // আসল ডিলিট অপারেশন চালানোর জন্য ফাংশন
   const performDelete = async (productId: string) => {
     const toastId = toast.loading('ডিলিট করা হচ্ছে...');
     try {
       const res = await fetch(`/api/products/${productId}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('ডিলিট করতে ব্যর্থ!');
       toast.success('প্রোডাক্ট সফলভাবে ডিলিট করা হয়েছে!', { id: toastId });
-      fetchProducts(); // Refresh the list
+      fetchProducts();
     } catch (error: unknown) {
       if (error instanceof Error) {
     toast.error(error.message, { id: toastId });
@@ -67,7 +66,6 @@ export default function ProductsPage() {
     }
   };
   
-  // handleDelete ফাংশনটি এখন একটি কাস্টম টোস্ট দেখাবে
   const handleDelete = (productId: string, productName: string) => {
     toast((t) => (
       <div className="flex flex-col items-center gap-4 p-2">
@@ -137,7 +135,6 @@ export default function ProductsPage() {
                   <td className="px-5 py-4 border-b border-slate-200 text-sm font-semibold text-slate-800">
                     <div className="flex space-x-3">
                       <button onClick={() => openModal('edit', product)} className="text-blue-600 hover:text-blue-800"><FiEdit size={18} /></button>
-                      {/* onClick ইভেন্টটি এখন product.name পাস করছে */}
                       <button onClick={() => handleDelete(product._id, product.name)} className="text-red-600 hover:text-red-800"><FiTrash2 size={18} /></button>
                     </div>
                   </td>
