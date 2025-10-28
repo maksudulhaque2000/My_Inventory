@@ -1,12 +1,19 @@
 // src/app/page.tsx
 import { FiArchive, FiDollarSign, FiAlertCircle } from 'react-icons/fi';
 
-// API থেকে ডেটা আনার জন্য এই ফাংশনটি আপডেট করা হয়েছে
+// Force this page to be dynamic (server-rendered at request time)
+export const dynamic = 'force-dynamic';
+
+// API থেকে ডেটা আনার জন্য এই ফাংশনটি আপডেট করা হয়েছে
 async function getDashboardData() {
   try {
-    // এখানে localhost ব্যবহার না করে relative path ব্যবহার করা ভালো
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/dashboard-summary`, {
-      cache: 'no-store', // সবসময় লেটেস্ট ডেটা দেখানোর জন্য
+    // Use absolute URL for server-side fetching
+    const baseUrl = process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}` 
+      : 'http://localhost:3000';
+    
+    const res = await fetch(`${baseUrl}/api/dashboard-summary`, {
+      cache: 'no-store', // সবসময় লেটেস্ট ডেটা দেখানোর জন্য
     });
 
     if (!res.ok) {
@@ -26,9 +33,6 @@ async function getDashboardData() {
     };
   }
 }
-
-// .env.local ফাইলে নিচের লাইনটি যোগ করুন
-// NEXT_PUBLIC_API_URL=http://localhost:3000
 
 export default async function DashboardPage() {
   const data = await getDashboardData();
